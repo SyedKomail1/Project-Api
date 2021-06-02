@@ -7,17 +7,22 @@ const auth = require("../../middlewares/auth");
 const admin = require("../../middlewares/admin");
 // get all products 
 router.get("/",async(req,res) =>{//,auth
-    let products = await product.find();
-    return res.send(products);
+    console.log(req.user);
+  let page = Number(req.query.page ? req.query.page : 1);
+  let perPage = Number(req.query.perPage ? req.query.perPage : 10);
+  let skipRecords = perPage * (page - 1);
+  let products = await product.find().skip(skipRecords).limit(perPage);
+   let total = await product.countDocuments();
+  return res.send({total,products});
 });
 // get single products
 router.get("/:id",async(req,res) =>{
     try {
         let single_prod = await product.findById(req.params.id);
-        if(!single_prod) return res.status(400).send("product with given id is not present");
+        if(!single_prod) return res.status(400).send("product with given id is not present");//will execute when id not present in db
         return res.send(single_prod);
     } catch (err) {
-        return res.status(400).send("invalid id");
+        return res.status(400).send("invalid id"); // execute if id format is wrong
     }
 });
 
